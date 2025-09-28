@@ -1,5 +1,4 @@
-import React from 'react';
-import { Smartphone } from 'lucide-react';
+// Header component with company logo
 
 interface HeaderProps {
   title: string;
@@ -12,12 +11,14 @@ export function Header({ title, subtitle }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
-                <Smartphone className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                MOBITEL
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/Logo.jpg" 
+                alt="Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              <span className="text-xl font-bold text-gray-800">
+                Queue Management System
               </span>
             </div>
             <div className="h-6 w-px bg-gray-300" />
