@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import type { Customer, QueueStatus, OutletQueue, AnalyticsData } from '../types';
 import { queueAPI, analyticsAPI } from '../utils/api';
 
@@ -80,7 +80,7 @@ export function QueueProvider({ children }: QueueProviderProps) {
     dispatch({ type: 'SET_CURRENT_CUSTOMER', payload: customer });
   };
 
-  const fetchQueueStatus = async (tokenId: string) => {
+  const fetchQueueStatus = useCallback(async (tokenId: string) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await queueAPI.getStatus(tokenId);
@@ -93,24 +93,52 @@ export function QueueProvider({ children }: QueueProviderProps) {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, []);
 
-  const fetchOutletQueue = async (outletId: string) => {
+  const fetchOutletQueue = useCallback(async (outletId: string) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await queueAPI.getOutletQueue(outletId);
-      if (response.success && response.data) {
-        dispatch({ type: 'SET_OUTLET_QUEUE', payload: response.data });
-      }
       dispatch({ type: 'SET_ERROR', payload: null });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch outlet queue' });
+      
+      console.log('[QueueContext] Fetching outlet queue for:', outletId);
+      const response = await queueAPI.getOutletQueue(outletId);
+      
+      console.log('[QueueContext] Queue API Response:', response);
+      
+      if (response.success && response.data) {
+        // Ensure the response data has all required fields with defaults
+        const queueData = {
+          outletId: response.data.outletId || outletId,
+          currentlyServing: response.data.currentlyServing || '--',
+          totalWaiting: typeof response.data.totalWaiting === 'number' ? response.data.totalWaiting : 0,
+          averageWaitTime: typeof response.data.averageWaitTime === 'number' ? response.data.averageWaitTime : 0,
+          nextTokens: Array.isArray(response.data.nextTokens) ? response.data.nextTokens : [],
+        };
+        
+        console.log('[QueueContext] Setting queue data:', queueData);
+        dispatch({ type: 'SET_OUTLET_QUEUE', payload: queueData });
+      } else {
+        throw new Error(response.message || 'Invalid response format');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Failed to fetch outlet queue';
+      console.error('[QueueContext] Queue fetch error:', errorMessage);
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      
+      // Set fallback queue data to prevent UI crashes
+      dispatch({ type: 'SET_OUTLET_QUEUE', payload: {
+        outletId,
+        currentlyServing: '--',
+        totalWaiting: 0,
+        averageWaitTime: 0,
+        nextTokens: [],
+      }});
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, []);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await analyticsAPI.getDashboard();
@@ -123,9 +151,9 @@ export function QueueProvider({ children }: QueueProviderProps) {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, []);
 
-  const startRealTimeUpdates = (tokenId: string) => {
+  const startRealTimeUpdates = useCallback((tokenId: string) => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
@@ -133,14 +161,14 @@ export function QueueProvider({ children }: QueueProviderProps) {
     intervalRef.current = setInterval(() => {
       fetchQueueStatus(tokenId);
     }, 5000);
-  };
+  }, [fetchQueueStatus]);
 
-  const stopRealTimeUpdates = () => {
+  const stopRealTimeUpdates = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     return () => {
