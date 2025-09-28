@@ -41,6 +41,18 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
     loadServiceTypes();
   }, []);
 
+  useEffect(() => {
+    if (isLoading) {
+      console.log('[RegistrationForm] Registering customer:', formData);
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (errors && Object.keys(errors).length > 0) {
+      console.error('[RegistrationForm] Registration errors:', errors);
+    }
+  }, [errors]);
+
   const loadServiceTypes = async () => {
     try {
       const response = await serviceAPI.getServiceTypes();
@@ -110,7 +122,8 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         phoneNumber: formData.phoneNumber.trim(),
         nicPassport: formData.nicPassport.trim(),
         serviceType: formData.serviceType,
-      });
+        outletId: 'outlet-001', // <-- Add this line
+      } as any); // Type cast to allow outletId
 
       if (response.success && response.data) {
         setCurrentCustomer(response.data);
@@ -131,52 +144,61 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   }));
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-lg mx-auto">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Customer Registration</h2>
-        <p className="text-gray-600">Please fill in your details to join the queue</p>
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <img 
+            src="/Logo.jpg" 
+            alt="Logo" 
+            className="w-8 h-8 object-contain"
+          />
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Customer Registration</h2>
+        </div>
+        <p className="text-sm sm:text-base text-gray-600">Please fill in your details to join the queue</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Full Name"
-          value={formData.name}
-          onChange={(e) => handleInputChange('name', e.target.value)}
-          error={errors.name}
-          placeholder="Enter your full name"
-          required
-          fullWidth
-        />
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
+          <Input
+            label="Full Name"
+            value={formData.name}
+            onChange={(e) => handleInputChange('name', e.target.value)}
+            error={errors.name}
+            placeholder="Enter your full name"
+            required
+            fullWidth
+          />
 
-        <Input
-          label="Phone Number"
-          value={formData.phoneNumber}
-          onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-          error={errors.phoneNumber}
-          placeholder="0771234567"
-          required
-          fullWidth
-        />
+          <Input
+            label="Phone Number"
+            value={formData.phoneNumber}
+            onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+            error={errors.phoneNumber}
+            placeholder="0771234567"
+            required
+            fullWidth
+          />
 
-        <Input
-          label="NIC/Passport Number"
-          value={formData.nicPassport}
-          onChange={(e) => handleInputChange('nicPassport', e.target.value)}
-          error={errors.nicPassport}
-          placeholder="971234567V or 199712345678"
-          required
-          fullWidth
-        />
+          <Input
+            label="NIC/Passport Number"
+            value={formData.nicPassport}
+            onChange={(e) => handleInputChange('nicPassport', e.target.value)}
+            error={errors.nicPassport}
+            placeholder="971234567V or 199712345678"
+            required
+            fullWidth
+          />
 
-        <Select
-          label="Service Type"
-          value={formData.serviceType}
-          onChange={(e) => handleInputChange('serviceType', e.target.value)}
-          options={serviceOptions}
-          error={errors.serviceType}
-          required
-          fullWidth
-        />
+          <Select
+            label="Service Type"
+            value={formData.serviceType}
+            onChange={(e) => handleInputChange('serviceType', e.target.value)}
+            options={serviceOptions}
+            error={errors.serviceType}
+            required
+            fullWidth
+          />
+        </div>
 
         <Button
           type="submit"
