@@ -61,30 +61,47 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       
       if (response.success && response.data) {
         console.log('Service types loaded:', response.data);
-        setServiceTypes(response.data);
+        
+        // Transform the API data to ensure estimatedTime is present
+        const transformedServices = response.data.map((service: any) => ({
+          id: service.id,
+          name: service.name,
+          estimatedTime: service.estimatedTime || 
+                        (service.estimatedDuration ? Math.round(service.estimatedDuration / 60) : getDefaultTime(service.name)),
+          category: service.category
+        }));
+        
+        setServiceTypes(transformedServices);
       } else {
         console.warn('API response was not successful or data is missing');
         // Use fallback services
-        setServiceTypes([
-          { id: 'general-inquiry', name: 'General Inquiry', estimatedTime: 5, category: 'Information' },
-          { id: 'account-services', name: 'Account Services', estimatedTime: 15, category: 'Banking' },
-          { id: 'card-services', name: 'Card Services', estimatedTime: 10, category: 'Cards' },
-          { id: 'loan-applications', name: 'Loan Applications', estimatedTime: 30, category: 'Lending' },
-          { id: 'money-transfer', name: 'Money Transfer', estimatedTime: 8, category: 'Transfers' },
-        ]);
+        setServiceTypes(getDefaultServiceTypes());
       }
     } catch (error) {
       console.error('Failed to load service types:', error);
       // Fallback service types matching what the API should return
-      setServiceTypes([
-        { id: 'general-inquiry', name: 'General Inquiry', estimatedTime: 5, category: 'Information' },
-        { id: 'account-services', name: 'Account Services', estimatedTime: 15, category: 'Banking' },
-        { id: 'card-services', name: 'Card Services', estimatedTime: 10, category: 'Cards' },
-        { id: 'loan-applications', name: 'Loan Applications', estimatedTime: 30, category: 'Lending' },
-        { id: 'money-transfer', name: 'Money Transfer', estimatedTime: 8, category: 'Transfers' },
-      ]);
+      setServiceTypes(getDefaultServiceTypes());
     }
   };
+
+  const getDefaultTime = (serviceName: string): number => {
+    const timeMap: { [key: string]: number } = {
+      'General Inquiry': 5,
+      'Account Services': 15,
+      'Card Services': 10,
+      'Loan Applications': 30,
+      'Money Transfer': 8
+    };
+    return timeMap[serviceName] || 10;
+  };
+
+  const getDefaultServiceTypes = () => [
+    { id: 'general-inquiry', name: 'General Inquiry', estimatedTime: 5, category: 'Information' },
+    { id: 'account-services', name: 'Account Services', estimatedTime: 15, category: 'Banking' },
+    { id: 'card-services', name: 'Card Services', estimatedTime: 10, category: 'Cards' },
+    { id: 'loan-applications', name: 'Loan Applications', estimatedTime: 30, category: 'Lending' },
+    { id: 'money-transfer', name: 'Money Transfer', estimatedTime: 8, category: 'Transfers' },
+  ];
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -154,7 +171,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   const serviceOptions = serviceTypes.map(service => ({
     value: service.id,
-    label: `${service.name} (~${service.estimatedTime || 'N/A'} min)`,
+    label: `${service.name} (~${service.estimatedTime} min)`,
   }));
 
   return (
