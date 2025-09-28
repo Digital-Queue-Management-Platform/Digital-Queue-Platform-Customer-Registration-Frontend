@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 interface SidebarProps {
   currentPath: string;
@@ -170,9 +171,9 @@ export const Sidebar = ({ currentPath }: SidebarProps) => {
         <nav className="p-4">
           <div className="space-y-2">
             {navigationItems.map((item) => (
-              <a
+              <Link
                 key={item.path}
-                href={item.path}
+                to={item.path}
                 onClick={handleNavClick}
                 className={`
                   relative flex items-center rounded-lg transition-all duration-200 group min-w-0
@@ -203,7 +204,7 @@ export const Sidebar = ({ currentPath }: SidebarProps) => {
                     {item.name}
                   </div>
                 )}
-              </a>
+              </Link>
             ))}
           </div>
         </nav>
