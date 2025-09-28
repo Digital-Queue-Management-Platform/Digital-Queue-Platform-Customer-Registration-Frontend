@@ -55,19 +55,33 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   const loadServiceTypes = async () => {
     try {
+      console.log('Loading service types from API...');
       const response = await serviceAPI.getServiceTypes();
+      console.log('API Response:', response);
+      
       if (response.success && response.data) {
+        console.log('Service types loaded:', response.data);
         setServiceTypes(response.data);
+      } else {
+        console.warn('API response was not successful or data is missing');
+        // Use fallback services
+        setServiceTypes([
+          { id: 'general-inquiry', name: 'General Inquiry', estimatedTime: 5, category: 'Information' },
+          { id: 'account-services', name: 'Account Services', estimatedTime: 15, category: 'Banking' },
+          { id: 'card-services', name: 'Card Services', estimatedTime: 10, category: 'Cards' },
+          { id: 'loan-applications', name: 'Loan Applications', estimatedTime: 30, category: 'Lending' },
+          { id: 'money-transfer', name: 'Money Transfer', estimatedTime: 8, category: 'Transfers' },
+        ]);
       }
     } catch (error) {
       console.error('Failed to load service types:', error);
-      // Fallback service types
+      // Fallback service types matching what the API should return
       setServiceTypes([
-        { id: '1', name: 'New Connection', estimatedTime: 15, category: 'Connection' },
-        { id: '2', name: 'Bill Payment', estimatedTime: 5, category: 'Payment' },
-        { id: '3', name: 'Technical Support', estimatedTime: 20, category: 'Support' },
-        { id: '4', name: 'Account Update', estimatedTime: 10, category: 'Account' },
-        { id: '5', name: 'Package Change', estimatedTime: 8, category: 'Service' },
+        { id: 'general-inquiry', name: 'General Inquiry', estimatedTime: 5, category: 'Information' },
+        { id: 'account-services', name: 'Account Services', estimatedTime: 15, category: 'Banking' },
+        { id: 'card-services', name: 'Card Services', estimatedTime: 10, category: 'Cards' },
+        { id: 'loan-applications', name: 'Loan Applications', estimatedTime: 30, category: 'Lending' },
+        { id: 'money-transfer', name: 'Money Transfer', estimatedTime: 8, category: 'Transfers' },
       ]);
     }
   };
@@ -140,7 +154,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   const serviceOptions = serviceTypes.map(service => ({
     value: service.id,
-    label: `${service.name} (~${service.estimatedTime} min)`,
+    label: `${service.name} (~${service.estimatedTime || 'N/A'} min)`,
   }));
 
   return (
