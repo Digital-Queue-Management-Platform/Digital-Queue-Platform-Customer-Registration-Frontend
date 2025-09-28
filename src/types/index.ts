@@ -2,12 +2,13 @@ export interface Customer {
   id: string;
   name: string;
   phoneNumber: string;
-  nicPassport: string;
+  nicPassport?: string;
+  email?: string;
   serviceType: string;
   tokenNumber: string;
   queuePosition: number;
   estimatedWaitTime: number;
-  status: 'waiting' | 'serving' | 'completed' | 'cancelled';
+  status: 'waiting' | 'being_served' | 'completed' | 'cancelled';
   createdAt: string;
 }
 

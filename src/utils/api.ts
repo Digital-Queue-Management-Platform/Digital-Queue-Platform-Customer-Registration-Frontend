@@ -10,11 +10,11 @@ import type {
   ServiceType 
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds
   headers: {
     'Content-Type': 'application/json',
   },
@@ -36,6 +36,19 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    // Better error handling for connection issues
+    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      console.error('API Error: Connection timeout - Backend server may be down');
+      const errorMessage = 'Backend server is not responding. Please check if the server is running on port 5001.';
+      return Promise.reject(new Error(errorMessage));
+    }
+    
+    if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+      console.error('API Error: Connection refused - Backend server is not running');
+      const errorMessage = 'Cannot connect to backend server. Please start the backend server.';
+      return Promise.reject(new Error(errorMessage));
+    }
+    
     console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error.response?.data || error);
   }
