@@ -2,9 +2,8 @@
 
 A modern, responsive web application for digital queue management built with React, TypeScript, and Tailwind CSS.
 
-![Digital Queue Management Platform](./public/Logo.jpg)
 
-## 🌟 Features
+## Features
 
 - **Customer Registration**: Easy-to-use registration form with real-time validation
 - **Queue Status Board**: Live queue monitoring and status updates
@@ -13,13 +12,13 @@ A modern, responsive web application for digital queue management built with Rea
 - **Real-time Updates**: Live queue status and wait time information
 - **Professional UI**: Clean, modern interface with intuitive navigation
 
-## 🚀 Live Demo
+## Live Demo
 
 **Frontend**: [https://digital-queue-platform-customer-reg.vercel.app](https://digital-queue-platform-customer-reg.vercel.app)
 
 **Backend API**: [https://digital-queue-platform-customer.onrender.com](https://digital-queue-platform-customer.onrender.com)
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend Framework**: React 18.3.1 with TypeScript
 - **Build Tool**: Vite 5.4.8
@@ -30,7 +29,7 @@ A modern, responsive web application for digital queue management built with Rea
 - **Icons**: Lucide React
 - **Deployment**: Vercel
 
-## 📱 Pages & Features
+## Pages & Features
 
 ### 1. Customer Registration (`/`)
 - Customer information form with validation
@@ -50,7 +49,7 @@ A modern, responsive web application for digital queue management built with Rea
 - Officer performance tracking
 - Service type breakdowns
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 frontend/
@@ -83,7 +82,7 @@ frontend/
 └── package.json                # Dependencies and scripts
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -122,21 +121,21 @@ frontend/
    
    Navigate to [http://localhost:5173](http://localhost:5173)
 
-## 📦 Available Scripts
+## Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
 - `npm run lint` - Run ESLint
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:5001/api` |
-| `VITE_WEBSOCKET_URL` | WebSocket connection URL | `ws://localhost:5001` |
+| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:5000/api` |
+| `VITE_WEBSOCKET_URL` | WebSocket connection URL | `ws://localhost:5000` |
 | `VITE_OUTLET_ID` | Default outlet identifier | `outlet-001` |
 
 ### API Endpoints
@@ -148,7 +147,7 @@ The frontend communicates with the following API endpoints:
 - `GET /api/queue/status/:tokenId` - Get queue status
 - `GET /api/analytics/*` - Analytics data endpoints
 
-## 🎨 UI Components
+## UI Components
 
 ### Layout Components
 - **ResponsiveSidebar**: Collapsible navigation sidebar
@@ -166,7 +165,7 @@ The frontend communicates with the following API endpoints:
 - **OfficerPerformanceChart**: Bar chart for performance metrics
 - **ServiceTypeBreakdown**: Pie chart for service distribution
 
-## 🔀 Routing
+## Routing
 
 The application uses React Router for client-side routing:
 
@@ -174,7 +173,7 @@ The application uses React Router for client-side routing:
 - `/queue-board` - Queue Status Board
 - `/analytics` - Analytics Dashboard
 
-## 📱 Responsive Design
+## Responsive Design
 
 The application is fully responsive and optimized for:
 
@@ -188,7 +187,7 @@ The application is fully responsive and optimized for:
 - Touch-friendly interfaces
 - Optimized font sizes and spacing
 
-## 🚀 Deployment
+## Deployment
 
 ### Vercel Deployment (Recommended)
 
@@ -204,16 +203,16 @@ npm run build
 
 The build artifacts will be stored in the `dist/` directory.
 
-## 🤝 Related Repositories
+## Related Repositories
 
 - **Backend API**: [Digital-Queue-Platform-Customer-Registration-Backend](https://github.com/Digital-Queue-Management-Platform/Digital-Queue-Platform-Customer-Registration-Backend)
 
-## 📄 API Documentation
+## API Documentation
 
 For detailed API documentation, please refer to the backend repository or visit the API health endpoint:
 [https://digital-queue-platform-customer.onrender.com/api/health](https://digital-queue-platform-customer.onrender.com/api/health)
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -229,14 +228,7 @@ For detailed API documentation, please refer to the backend repository or visit 
    - Clear `node_modules` and reinstall dependencies
    - Check for TypeScript errors
 
-## 🔄 Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## 📊 Performance
+## Performance
 
 The application is optimized for performance with:
 
@@ -245,21 +237,12 @@ The application is optimized for performance with:
 - Optimized bundle sizes with Vite
 - Efficient state management with React Context
 
-## 🏷️ Version History
+## Version History
 
 - **v1.0.0** - Initial release with core functionality
 - Professional responsive design implementation
 - React Router integration
 - Production deployment optimization
-
-## 👨‍💻 Author
-
-**Ojitha Rajapaksha**
-- Organization: [Digital-Queue-Management-Platform](https://github.com/Digital-Queue-Management-Platform)
-
-## 📄 License
-
-This project is licensed under the MIT License.
 
 ## 🔗 Links
 
