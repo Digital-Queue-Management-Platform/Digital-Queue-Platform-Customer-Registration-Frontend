@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Header } from '../components/common/Header';
+import { useState } from 'react';
 import { RegistrationForm } from '../components/registration/RegistrationForm';
 import { TokenDisplay } from '../components/registration/TokenDisplay';
 import type { Customer } from '../types';
@@ -16,19 +15,12 @@ export function RegistrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header 
-        title="Queue Management System" 
-        subtitle="Customer Registration Portal"
-      />
-      
-      <main className="py-8 px-4">
-        {currentCustomer ? (
-          <TokenDisplay customer={currentCustomer} onBack={handleBack} />
-        ) : (
-          <RegistrationForm onSuccess={handleRegistrationSuccess} />
-        )}
-      </main>
+    <div className="space-y-6">
+      {currentCustomer ? (
+        <TokenDisplay customer={currentCustomer} onBack={handleBack} />
+      ) : (
+        <RegistrationForm onSuccess={handleRegistrationSuccess} />
+      )}
     </div>
   );
 }

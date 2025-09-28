@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { Header } from '../components/common/Header';
+import { useEffect, useState, useCallback } from 'react';
 import { StatCard } from '../components/analytics/StatCard';
 import { WaitTimeChart } from '../components/analytics/WaitTimeChart';
 import { OfficerPerformanceChart } from '../components/analytics/OfficerPerformanceChart';
@@ -24,28 +23,28 @@ export function AnalyticsDashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   useEffect(() => {
-    loadDashboardData();
+    const initializeDashboard = async () => {
+      try {
+        await Promise.all([
+          fetchAnalytics(),
+          loadWaitTimeData(),
+          loadOfficerData(),
+        ]);
+        setLastUpdated(new Date());
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      }
+    };
+
+    initializeDashboard();
     
     // Auto-refresh every 5 minutes
-    const interval = setInterval(loadDashboardData, 5 * 60 * 1000);
+    const interval = setInterval(initializeDashboard, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, []); // Empty dependency array to prevent infinite loops
 
-  const loadDashboardData = async () => {
-    try {
-      await Promise.all([
-        fetchAnalytics(),
-        loadWaitTimeData(),
-        loadOfficerData(),
-      ]);
-      setLastUpdated(new Date());
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-    }
-  };
-
-  const loadWaitTimeData = async () => {
+  const loadWaitTimeData = useCallback(async () => {
     try {
       const response = await analyticsAPI.getWaitTimes('24h');
       if (response.success && response.data) {
@@ -64,9 +63,9 @@ export function AnalyticsDashboard() {
         { time: '16:00', waitTime: 20, queueLength: 16 },
       ]);
     }
-  };
+  }, []);
 
-  const loadOfficerData = async () => {
+  const loadOfficerData = useCallback(async () => {
     try {
       const response = await analyticsAPI.getOfficerPerformance();
       if (response.success && response.data) {
@@ -81,11 +80,24 @@ export function AnalyticsDashboard() {
         { officerId: '4', name: 'Mike R.', customersServed: 26, averageServiceTime: 7.8, efficiency: 98 },
       ]);
     }
-  };
+  }, []);
 
-  const handleRefresh = () => {
+  const loadDashboardData = useCallback(async () => {
+    try {
+      await Promise.all([
+        fetchAnalytics(),
+        loadWaitTimeData(),
+        loadOfficerData(),
+      ]);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    }
+  }, [fetchAnalytics, loadWaitTimeData, loadOfficerData]);
+
+  const handleRefresh = useCallback(() => {
     loadDashboardData();
-  };
+  }, [loadDashboardData]);
 
   // Fallback data for demonstration
   const dashboardData = analytics || {
@@ -111,31 +123,28 @@ export function AnalyticsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header title="Analytics Dashboard" subtitle="Real-time queue insights and performance metrics" />
-      
-      <main className="py-8 px-4 max-w-7xl mx-auto">
-        {/* Header Actions */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-            <p className="text-sm text-gray-600">
-              Last updated: {lastUpdated.toLocaleTimeString()}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            isLoading={isLoading}
-            className="flex items-center space-x-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>Refresh</span>
-          </Button>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header Actions */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Dashboard Overview</h2>
+          <p className="text-xs sm:text-sm text-gray-600">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </p>
         </div>
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          isLoading={isLoading}
+          className="flex items-center justify-center space-x-2 w-full sm:w-auto"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Refresh</span>
+        </Button>
+      </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <StatCard
             title="Average Wait Time"
             value={`${dashboardData.averageWaitTime} min`}
@@ -167,13 +176,13 @@ export function AnalyticsDashboard() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <WaitTimeChart data={waitTimeData} />
           <OfficerPerformanceChart data={officerData} />
         </div>
 
         {/* Service Type Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           <ServiceTypeBreakdown data={dashboardData.serviceTypeBreakdown} />
           
           {/* Additional Metrics Card */}
@@ -201,7 +210,6 @@ export function AnalyticsDashboard() {
             </div>
           </div>
         </div>
-      </main>
     </div>
   );
 }
