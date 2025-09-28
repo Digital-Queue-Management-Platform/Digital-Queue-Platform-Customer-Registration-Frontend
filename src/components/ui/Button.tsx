@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes, forwardRef } from 'react';
+import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { clsx } from 'clsx';
 import { LoadingSpinner } from './LoadingSpinner';
 
@@ -31,8 +31,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const sizeClasses = {
       sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-base',
-      lg: 'px-6 py-3 text-lg',
+      md: 'px-4 py-2 text-sm sm:text-base',
+      lg: 'px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-lg',
     };
 
     return (
