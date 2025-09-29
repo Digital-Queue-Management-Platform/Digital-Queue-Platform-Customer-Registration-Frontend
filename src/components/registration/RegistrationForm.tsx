@@ -184,7 +184,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         email: formData.email.trim(),
         nicPassport: formData.nicPassport.trim(),
         serviceType: formData.serviceType,
-        outletId: 'outlet-001',
+        outletId: 'cmg5dtc320000m4m26o15ce8d', // Downtown Branch
       } as any);
 
       if (response.success && response.data) {

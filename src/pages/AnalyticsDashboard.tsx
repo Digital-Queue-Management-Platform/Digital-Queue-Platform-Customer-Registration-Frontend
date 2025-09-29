@@ -70,15 +70,14 @@ export function AnalyticsDashboard() {
       const response = await analyticsAPI.getOfficerPerformance();
       if (response.success && response.data) {
         setOfficerData(response.data);
+      } else {
+        // Set empty array if no data
+        setOfficerData([]);
       }
     } catch (error) {
-      // Fallback data for demonstration
-      setOfficerData([
-        { officerId: '1', name: 'Sarah M.', customersServed: 24, averageServiceTime: 8.5, efficiency: 95 },
-        { officerId: '2', name: 'John D.', customersServed: 21, averageServiceTime: 9.2, efficiency: 88 },
-        { officerId: '3', name: 'Lisa K.', customersServed: 18, averageServiceTime: 10.1, efficiency: 82 },
-        { officerId: '4', name: 'Mike R.', customersServed: 26, averageServiceTime: 7.8, efficiency: 98 },
-      ]);
+      console.error('Failed to load officer data:', error);
+      // Set empty array on error instead of fallback data
+      setOfficerData([]);
     }
   }, []);
 
