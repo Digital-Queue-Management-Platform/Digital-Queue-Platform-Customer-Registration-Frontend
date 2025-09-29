@@ -9,6 +9,21 @@ interface QueueStatusBoardProps {
   outletId: string;
 }
 
+// Helper function to convert full token to short format (QT-20250929-0001 -> T001)
+const getShortTokenNumber = (tokenNumber: string): string => {
+  if (!tokenNumber || tokenNumber === '--') return '--';
+  
+  // Extract the last 4 digits from formats like QT-20250929-0001
+  const match = tokenNumber.match(/-(\d{4})$/);
+  if (match) {
+    const number = parseInt(match[1], 10);
+    return `T${number.toString().padStart(3, '0')}`;
+  }
+  
+  // Fallback: return as is
+  return tokenNumber;
+};
+
 export function QueueStatusBoard({ outletId }: QueueStatusBoardProps) {
   const { outletQueue, fetchOutletQueue, isLoading } = useQueue();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -49,17 +64,23 @@ export function QueueStatusBoard({ outletId }: QueueStatusBoardProps) {
   useEffect(() => {
     if (outletQueue) {
       console.log('[QueueStatusBoard] Outlet queue data:', outletQueue);
+      console.log('[QueueStatusBoard] Next tokens received:', outletQueue.nextTokens);
+      console.log('[QueueStatusBoard] Currently serving:', outletQueue.currentlyServing);
+      console.log('[QueueStatusBoard] Total waiting:', outletQueue.totalWaiting);
     }
   }, [outletQueue]);
 
   // Enhanced error handling with fallback data and null checks
   const displayData = useMemo(() => {
     try {
+      const rawCurrentlyServing = (outletQueue?.currentlyServing && typeof outletQueue.currentlyServing === 'string') ? outletQueue.currentlyServing : '--';
+      const rawNextTokens = (Array.isArray(outletQueue?.nextTokens)) ? outletQueue.nextTokens.filter(token => token && typeof token === 'string') : [];
+      
       return {
-        currentlyServing: (outletQueue?.currentlyServing && typeof outletQueue.currentlyServing === 'string') ? outletQueue.currentlyServing : '--',
+        currentlyServing: getShortTokenNumber(rawCurrentlyServing),
         totalWaiting: (typeof outletQueue?.totalWaiting === 'number' && !isNaN(outletQueue.totalWaiting)) ? outletQueue.totalWaiting : 0,
         averageWaitTime: (typeof outletQueue?.averageWaitTime === 'number' && !isNaN(outletQueue.averageWaitTime)) ? outletQueue.averageWaitTime : 0,
-        nextTokens: (Array.isArray(outletQueue?.nextTokens)) ? outletQueue.nextTokens.filter(token => token && typeof token === 'string') : [],
+        nextTokens: rawNextTokens.map(token => getShortTokenNumber(token)),
       };
     } catch (error) {
       console.warn('[QueueStatusBoard] Error processing queue data:', error);

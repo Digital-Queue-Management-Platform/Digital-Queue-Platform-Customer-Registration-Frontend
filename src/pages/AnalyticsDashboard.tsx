@@ -46,39 +46,33 @@ export function AnalyticsDashboard() {
 
   const loadWaitTimeData = useCallback(async () => {
     try {
-      const response = await analyticsAPI.getWaitTimes('24h');
+      const outletId = import.meta.env.VITE_OUTLET_ID;
+      const response = await analyticsAPI.getWaitTimes('24h', outletId);
       if (response.success && response.data) {
         setWaitTimeData(response.data);
+      } else {
+        console.error('Wait times API error:', response);
+        setWaitTimeData([]);
       }
     } catch (error) {
-      // Fallback data for demonstration
-      setWaitTimeData([
-        { time: '09:00', waitTime: 8, queueLength: 5 },
-        { time: '10:00', waitTime: 12, queueLength: 8 },
-        { time: '11:00', waitTime: 15, queueLength: 12 },
-        { time: '12:00', waitTime: 18, queueLength: 15 },
-        { time: '13:00', waitTime: 14, queueLength: 10 },
-        { time: '14:00', waitTime: 10, queueLength: 7 },
-        { time: '15:00', waitTime: 16, queueLength: 13 },
-        { time: '16:00', waitTime: 20, queueLength: 16 },
-      ]);
+      console.error('Failed to load wait time data:', error);
+      setWaitTimeData([]);
     }
   }, []);
 
   const loadOfficerData = useCallback(async () => {
     try {
-      const response = await analyticsAPI.getOfficerPerformance();
+      const outletId = import.meta.env.VITE_OUTLET_ID;
+      const response = await analyticsAPI.getOfficerPerformance(outletId);
       if (response.success && response.data) {
         setOfficerData(response.data);
+      } else {
+        console.error('Officer performance API error:', response);
+        setOfficerData([]);
       }
     } catch (error) {
-      // Fallback data for demonstration
-      setOfficerData([
-        { officerId: '1', name: 'Sarah M.', customersServed: 24, averageServiceTime: 8.5, efficiency: 95 },
-        { officerId: '2', name: 'John D.', customersServed: 21, averageServiceTime: 9.2, efficiency: 88 },
-        { officerId: '3', name: 'Lisa K.', customersServed: 18, averageServiceTime: 10.1, efficiency: 82 },
-        { officerId: '4', name: 'Mike R.', customersServed: 26, averageServiceTime: 7.8, efficiency: 98 },
-      ]);
+      console.error('Failed to load officer performance data:', error);
+      setOfficerData([]);
     }
   }, []);
 

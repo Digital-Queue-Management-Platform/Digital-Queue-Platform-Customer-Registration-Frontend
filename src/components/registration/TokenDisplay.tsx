@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Clock, Users, QrCode, CheckCircle } from 'lucide-react';
@@ -14,6 +14,11 @@ export function TokenDisplay({ customer, onBack }: TokenDisplayProps) {
   const { queueStatus, startRealTimeUpdates, stopRealTimeUpdates } = useQueue();
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
 
+  // Debug customer data
+  useEffect(() => {
+    console.log('TokenDisplay received customer data:', customer);
+  }, [customer]);
+
   useEffect(() => {
     startRealTimeUpdates(customer.tokenNumber);
     generateQRCode();
@@ -25,33 +30,113 @@ export function TokenDisplay({ customer, onBack }: TokenDisplayProps) {
 
   const generateQRCode = async () => {
     try {
-      // Create QR code data
-      const qrData = JSON.stringify({
+      // Get real QR data from backend API
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/customer/${customer.tokenNumber}/qr`);
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        // Use the real QR data from backend
+        const qrData = result.data.qrData;
+        
+        // Generate QR code URL using qr-server.com with real data
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+        setQrCodeUrl(qrUrl);
+        
+        console.log('Generated QR code with real data:', JSON.parse(qrData));
+      } else {
+        throw new Error('Failed to get QR data from backend');
+      }
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+      
+      // Fallback to local QR generation if API fails
+      const fallbackQrData = JSON.stringify({
         tokenNumber: customer.tokenNumber,
         name: customer.name,
         serviceType: customer.serviceType,
         timestamp: customer.createdAt,
       });
 
-      // For demonstration, create a simple QR code URL using qr-server.com
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fallbackQrData)}`;
       setQrCodeUrl(qrUrl);
-    } catch (error) {
-      console.error('Failed to generate QR code:', error);
     }
   };
 
   const currentPosition = queueStatus?.position || customer.queuePosition;
-  const estimatedWaitTime = queueStatus?.estimatedWaitTime || customer.estimatedWaitTime;
-  const progressPercentage = Math.max(0, 100 - (currentPosition * 10));
+  const rawWaitTime = queueStatus?.estimatedWaitTime || customer.estimatedWaitTime;
+  
+  // Calculate realistic progress based on queue position
+  // Assume average 5-10 people in queue, so position 2 out of 10 = 80% progress
+  const totalQueueEstimate = Math.max(currentPosition + 3, 8); // Minimum queue size of 8
+  const progressPercentage = Math.max(10, Math.min(90, ((totalQueueEstimate - currentPosition) / totalQueueEstimate) * 100));
 
-  const formatWaitTime = (minutes: number) => {
-    if (minutes < 60) {
-      return `${minutes} min`;
+  // Extract short token number (e.g., "QT-20250929-0002" -> "T002") 
+  const getShortTokenNumber = (tokenNumber: string | undefined) => {
+    if (!tokenNumber) {
+      return 'T???';
     }
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
+    const parts = tokenNumber.split('-');
+    if (parts.length >= 3) {
+      const sequence = parts[parts.length - 1]; // Get last part (e.g., "0002")
+      return `T${sequence}`; // Return "T002"
+    }
+    return tokenNumber; // Fallback to full token if parsing fails
+  };
+
+  const formatWaitTime = (timeInMilliseconds: number) => {
+    // Convert milliseconds to minutes for realistic display
+    const minutes = Math.floor(timeInMilliseconds / (1000 * 60));
+    
+    // Cap maximum wait time to something reasonable (e.g., 4 hours = 240 minutes)
+    const cappedMinutes = Math.min(minutes, 240);
+    
+    if (cappedMinutes < 60) {
+      return `${cappedMinutes}m`;
+    }
+    const hours = Math.floor(cappedMinutes / 60);
+    const remainingMinutes = cappedMinutes % 60;
+    if (remainingMinutes === 0) {
+      return `${hours}h`;
+    }
     return `${hours}h ${remainingMinutes}m`;
+  };
+
+  // Get formatted wait time
+  const displayWaitTime = formatWaitTime(rawWaitTime);
+
+  // Format service type for display
+  const formatServiceType = (serviceType: string | undefined) => {
+    // Handle undefined/null service types
+    if (!serviceType) {
+      return 'General Service';
+    }
+    
+    // Handle different service type formats
+    if (serviceType.startsWith('SVC')) {
+      // Handle legacy SVC codes
+      const serviceMap: { [key: string]: string } = {
+        'SVC001': 'New Connection',
+        'SVC002': 'Bill Payment', 
+        'SVC003': 'Technical Support',
+        'SVC004': 'Account Update',
+        'SVC005': 'Package Change',
+        'SVC006': 'Service Disconnection',
+        'SVC007': 'Device Support',
+        'SVC008': 'Complaint Resolution'
+      };
+      return serviceMap[serviceType] || 'General Service';
+    }
+    
+    // Handle hyphenated service types like 'bill-payments'
+    if (serviceType.includes('-')) {
+      return serviceType
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    
+    // Handle camelCase or single words
+    return serviceType.charAt(0).toUpperCase() + serviceType.slice(1);
   };
 
   return (
@@ -61,13 +146,13 @@ export function TokenDisplay({ customer, onBack }: TokenDisplayProps) {
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-gray-700 mb-2">Your Token Number</h2>
           <div className="text-6xl font-bold text-blue-600 mb-2">
-            {customer.tokenNumber}
+            {getShortTokenNumber(customer?.tokenNumber)}
           </div>
-          <p className="text-gray-600">{customer.name}</p>
-          <p className="text-sm text-gray-500">{customer.serviceType}</p>
+          <p className="text-lg font-medium text-gray-700">{customer?.name || 'Unknown Customer'}</p>
+          <p className="text-sm text-blue-600 font-medium">{formatServiceType(customer?.serviceType)}</p>
         </div>
 
-        {customer.status === 'serving' && (
+        {customer.status === 'being_served' && (
           <div className="flex items-center justify-center space-x-2 text-green-600 mb-4">
             <CheckCircle className="w-5 h-5" />
             <span className="font-semibold">You're being served!</span>
@@ -92,7 +177,7 @@ export function TokenDisplay({ customer, onBack }: TokenDisplayProps) {
               <span className="text-sm font-medium text-gray-700">Estimated Wait</span>
             </div>
             <span className="text-lg font-semibold text-green-600">
-              {formatWaitTime(estimatedWaitTime)}
+              {displayWaitTime}
             </span>
           </div>
 

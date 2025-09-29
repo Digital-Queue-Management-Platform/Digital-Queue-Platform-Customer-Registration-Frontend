@@ -83,16 +83,20 @@ export const queueAPI = {
 };
 
 export const analyticsAPI = {
-  getDashboard: async (): Promise<ApiResponse<AnalyticsData>> => {
-    return apiClient.get('/analytics/dashboard');
+  getDashboard: async (outletId?: string): Promise<ApiResponse<AnalyticsData>> => {
+    const url = outletId ? `/analytics/dashboard?outletId=${outletId}` : '/analytics/dashboard';
+    return apiClient.get(url);
   },
 
-  getWaitTimes: async (period: string = '24h'): Promise<ApiResponse<WaitTimeData[]>> => {
-    return apiClient.get(`/analytics/wait-times?period=${period}`);
+  getWaitTimes: async (period: string = '24h', outletId?: string): Promise<ApiResponse<WaitTimeData[]>> => {
+    const params = new URLSearchParams({ period });
+    if (outletId) params.append('outletId', outletId);
+    return apiClient.get(`/analytics/wait-times?${params.toString()}`);
   },
 
-  getOfficerPerformance: async (): Promise<ApiResponse<OfficerPerformance[]>> => {
-    return apiClient.get('/analytics/officer-performance');
+  getOfficerPerformance: async (outletId?: string): Promise<ApiResponse<OfficerPerformance[]>> => {
+    const url = outletId ? `/analytics/officer-performance?outletId=${outletId}` : '/analytics/officer-performance';
+    return apiClient.get(url);
   },
 };
 

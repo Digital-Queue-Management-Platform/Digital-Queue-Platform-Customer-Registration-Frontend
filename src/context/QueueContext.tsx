@@ -104,15 +104,21 @@ export function QueueProvider({ children }: QueueProviderProps) {
       const response = await queueAPI.getOutletQueue(outletId);
       
       console.log('[QueueContext] Queue API Response:', response);
+      console.log('[QueueContext] Raw API Data:', JSON.stringify(response.data, null, 2));
       
       if (response.success && response.data) {
         // Ensure the response data has all required fields with defaults
+        const rawData = response.data as any; // Use any to access queueList
         const queueData = {
-          outletId: response.data.outletId || outletId,
-          currentlyServing: response.data.currentlyServing || '--',
-          totalWaiting: typeof response.data.totalWaiting === 'number' ? response.data.totalWaiting : 0,
-          averageWaitTime: typeof response.data.averageWaitTime === 'number' ? response.data.averageWaitTime : 0,
-          nextTokens: Array.isArray(response.data.nextTokens) ? response.data.nextTokens : [],
+          outletId: rawData.outletId || outletId,
+          currentlyServing: rawData.currentlyServing || '--',
+          totalWaiting: typeof rawData.totalWaiting === 'number' ? rawData.totalWaiting : 0,
+          averageWaitTime: typeof rawData.averageWaitTime === 'number' ? rawData.averageWaitTime : 0,
+          nextTokens: Array.isArray(rawData.nextTokens) 
+            ? rawData.nextTokens 
+            : Array.isArray(rawData.queueList) 
+              ? rawData.queueList.map((customer: any) => customer.tokenNumber)
+              : [],
         };
         
         console.log('[QueueContext] Setting queue data:', queueData);
@@ -141,12 +147,16 @@ export function QueueProvider({ children }: QueueProviderProps) {
   const fetchAnalytics = useCallback(async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await analyticsAPI.getDashboard();
+      const outletId = import.meta.env.VITE_OUTLET_ID;
+      const response = await analyticsAPI.getDashboard(outletId);
       if (response.success && response.data) {
         dispatch({ type: 'SET_ANALYTICS', payload: response.data });
+      } else {
+        console.error('Analytics API error:', response);
       }
       dispatch({ type: 'SET_ERROR', payload: null });
     } catch (error) {
+      console.error('Failed to fetch analytics:', error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch analytics' });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });

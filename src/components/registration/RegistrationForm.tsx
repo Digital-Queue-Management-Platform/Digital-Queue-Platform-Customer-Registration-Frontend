@@ -177,6 +177,9 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
     setIsLoading(true);
     try {
+      const outletId = import.meta.env.VITE_OUTLET_ID;
+      console.log('[RegistrationForm] Using outlet ID:', outletId);
+      
       const response = await customerAPI.register({
         name: formData.name.trim(),
         phoneNumber: formData.mobileNumber.trim(), // Use mobile number as primary phone
@@ -184,17 +187,42 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         email: formData.email.trim(),
         nicPassport: formData.nicPassport.trim(),
         serviceType: formData.serviceType,
-        outletId: 'outlet-001',
+        outletId: outletId,
       } as any);
 
       if (response.success && response.data) {
-        setCurrentCustomer(response.data);
-        onSuccess(response.data);
+        console.log('[RegistrationForm] API Response data:', response.data);
+        const responseData = response.data as any;
+        const customerData = responseData.customer || response.data;
+        console.log('[RegistrationForm] Customer data being passed:', customerData);
+        setCurrentCustomer(customerData);
+        onSuccess(customerData);
       } else {
-        setErrors({ serviceType: response.message || 'Registration failed' });
+        // Handle duplicate registration error specifically
+        if (response.message && response.message.includes('already registered today')) {
+          const responseData = response.data as any;
+          const existingToken = responseData?.existingToken;
+          const message = existingToken 
+            ? `You're already registered today! Your token number is: ${existingToken}`
+            : 'You have already registered today. Please check your existing token.';
+          setErrors({ serviceType: message });
+        } else {
+          setErrors({ serviceType: response.message || 'Registration failed' });
+        }
       }
     } catch (error: any) {
-      setErrors({ serviceType: error.message || 'Registration failed. Please try again.' });
+      console.error('[RegistrationForm] Registration error:', error);
+      
+      // Check if it's a duplicate registration error from the API
+      if (error.response?.data?.message?.includes('already registered today')) {
+        const existingToken = error.response.data.data?.existingToken;
+        const message = existingToken 
+          ? `You're already registered today! Your token number is: ${existingToken}`
+          : 'You have already registered today. Please check your existing token.';
+        setErrors({ serviceType: message });
+      } else {
+        setErrors({ serviceType: error.message || 'Registration failed. Please try again.' });
+      }
     } finally {
       setIsLoading(false);
     }
