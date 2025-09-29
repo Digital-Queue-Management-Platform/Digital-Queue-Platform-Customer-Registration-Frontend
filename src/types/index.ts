@@ -1,7 +1,8 @@
 export interface Customer {
   id: string;
   name: string;
-  phoneNumber: string;
+  phoneNumber: string; // Mobile number (primary contact)
+  telephoneNumber?: string;
   nicPassport?: string;
   email?: string;
   serviceType: string;
