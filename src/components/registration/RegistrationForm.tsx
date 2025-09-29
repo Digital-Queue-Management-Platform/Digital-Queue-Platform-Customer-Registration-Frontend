@@ -13,15 +13,19 @@ interface RegistrationFormProps {
 
 interface FormData {
   name: string;
-  phoneNumber: string;
+  telephoneNumber: string;
+  mobileNumber: string;
   nicPassport: string;
+  email: string;
   serviceType: string;
 }
 
 interface FormErrors {
   name?: string;
-  phoneNumber?: string;
+  telephoneNumber?: string;
+  mobileNumber?: string;
   nicPassport?: string;
+  email?: string;
   serviceType?: string;
 }
 
@@ -29,8 +33,10 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   const { setCurrentCustomer } = useQueue();
   const [formData, setFormData] = useState<FormData>({
     name: '',
-    phoneNumber: '',
+    telephoneNumber: '',
+    mobileNumber: '',
     nicPassport: '',
+    email: '',
     serviceType: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -86,21 +92,33 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   const getDefaultTime = (serviceName: string): number => {
     const timeMap: { [key: string]: number } = {
-      'General Inquiry': 5,
-      'Account Services': 15,
-      'Card Services': 10,
-      'Loan Applications': 30,
-      'Money Transfer': 8
+      'Bill Payments': 8,
+      'Technical Support & Troubleshooting': 15,
+      'Service Disconnections/Reconnections': 12,
+      'International Roaming Services': 10,
+      'New Connections': 20,
+      'Device Issues/Repairs': 15,
+      'Complaint Resolution': 18,
+      'Corporate Account Management': 25,
+      'Plan Changes/Upgrades': 9,
+      'Account Management': 12,
+      'Document Submission/Verification': 6
     };
-    return timeMap[serviceName] || 10;
+    return timeMap[serviceName] || 12;
   };
 
   const getDefaultServiceTypes = () => [
-    { id: 'general-inquiry', name: 'General Inquiry', estimatedTime: 5, category: 'Information' },
-    { id: 'account-services', name: 'Account Services', estimatedTime: 15, category: 'Banking' },
-    { id: 'card-services', name: 'Card Services', estimatedTime: 10, category: 'Cards' },
-    { id: 'loan-applications', name: 'Loan Applications', estimatedTime: 30, category: 'Lending' },
-    { id: 'money-transfer', name: 'Money Transfer', estimatedTime: 8, category: 'Transfers' },
+    { id: 'bill-payments', name: 'Bill Payments', estimatedTime: 8, category: 'Billing' },
+    { id: 'technical-support', name: 'Technical Support & Troubleshooting', estimatedTime: 15, category: 'Support' },
+    { id: 'service-disconnections', name: 'Service Disconnections/Reconnections', estimatedTime: 12, category: 'Service Management' },
+    { id: 'international-roaming', name: 'International Roaming Services', estimatedTime: 10, category: 'International Services' },
+    { id: 'new-connections', name: 'New Connections', estimatedTime: 20, category: 'Registration' },
+    { id: 'device-issues', name: 'Device Issues/Repairs', estimatedTime: 15, category: 'Device Support' },
+    { id: 'complaint-resolution', name: 'Complaint Resolution', estimatedTime: 18, category: 'Customer Service' },
+    { id: 'corporate-account', name: 'Corporate Account Management', estimatedTime: 25, category: 'Corporate Services' },
+    { id: 'plan-changes', name: 'Plan Changes/Upgrades', estimatedTime: 9, category: 'Plan Management' },
+    { id: 'account-management', name: 'Account Management', estimatedTime: 12, category: 'Account Services' },
+    { id: 'document-submission', name: 'Document Submission/Verification', estimatedTime: 6, category: 'Documentation' },
   ];
 
   const validateForm = (): boolean => {
@@ -112,16 +130,27 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       newErrors.name = 'Name must be at least 2 characters';
     }
 
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
-    } else if (!/^0\d{9}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Enter a valid phone number (0XXXXXXXXX)';
+    // Validate telephone number (optional)
+    if (formData.telephoneNumber.trim() && !/^0\d{9}$/.test(formData.telephoneNumber)) {
+      newErrors.telephoneNumber = 'Enter a valid telephone number (0XXXXXXXXX)';
+    }
+
+    // Validate mobile number (required)
+    if (!formData.mobileNumber.trim()) {
+      newErrors.mobileNumber = 'Mobile number is required';
+    } else if (!/^07\d{8}$/.test(formData.mobileNumber)) {
+      newErrors.mobileNumber = 'Enter a valid mobile number (07XXXXXXXX)';
     }
 
     if (!formData.nicPassport.trim()) {
       newErrors.nicPassport = 'NIC/Passport is required';
     } else if (!/^(\d{9}[vVxX]|\d{12})$/.test(formData.nicPassport.replace(/\s/g, ''))) {
       newErrors.nicPassport = 'Enter a valid NIC or Passport number';
+    }
+
+    // Validate email (optional)
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Enter a valid email address';
     }
 
     if (!formData.serviceType) {
@@ -150,11 +179,13 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
     try {
       const response = await customerAPI.register({
         name: formData.name.trim(),
-        phoneNumber: formData.phoneNumber.trim(),
+        phoneNumber: formData.mobileNumber.trim(), // Use mobile number as primary phone
+        telephoneNumber: formData.telephoneNumber.trim(),
+        email: formData.email.trim(),
         nicPassport: formData.nicPassport.trim(),
         serviceType: formData.serviceType,
-        outletId: 'outlet-001', // <-- Add this line
-      } as any); // Type cast to allow outletId
+        outletId: 'outlet-001',
+      } as any);
 
       if (response.success && response.data) {
         setCurrentCustomer(response.data);
@@ -201,10 +232,19 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           />
 
           <Input
-            label="Phone Number"
-            value={formData.phoneNumber}
-            onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-            error={errors.phoneNumber}
+            label="Telephone Number"
+            value={formData.telephoneNumber}
+            onChange={(e) => handleInputChange('telephoneNumber', e.target.value)}
+            error={errors.telephoneNumber}
+            placeholder="0112345678 (Optional)"
+            fullWidth
+          />
+
+          <Input
+            label="Mobile Number"
+            value={formData.mobileNumber}
+            onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
+            error={errors.mobileNumber}
             placeholder="0771234567"
             required
             fullWidth
@@ -217,6 +257,16 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             error={errors.nicPassport}
             placeholder="971234567V or 199712345678"
             required
+            fullWidth
+          />
+
+          <Input
+            label="Email Address"
+            value={formData.email}
+            onChange={(e) => handleInputChange('email', e.target.value)}
+            error={errors.email}
+            placeholder="example@email.com (Optional)"
+            type="email"
             fullWidth
           />
 

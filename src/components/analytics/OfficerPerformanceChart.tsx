@@ -16,6 +16,24 @@ interface OfficerPerformanceChartProps {
 }
 
 export function OfficerPerformanceChart({ data }: OfficerPerformanceChartProps) {
+  if (!data || data.length === 0) {
+    return (
+      <Card padding="lg">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Officer Performance</h3>
+          <p className="text-sm text-gray-600">Customers served by each officer today</p>
+        </div>
+        
+        <div className="h-80 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <p className="text-lg font-medium">No Officers Available</p>
+            <p className="text-sm">No officer data found in the system.</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card padding="lg">
       <div className="mb-6">

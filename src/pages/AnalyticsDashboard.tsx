@@ -192,19 +192,34 @@ export function AnalyticsDashboard() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Peak Hour</span>
-                  <span className="font-semibold text-gray-900">2:00 PM - 3:00 PM</span>
+                  <span className="font-semibold text-gray-900">
+                    {dashboardData.peakHours && dashboardData.peakHours.length > 0 
+                      ? `${dashboardData.peakHours[0].hour}:00 - ${dashboardData.peakHours[0].hour + 1}:00` 
+                      : 'No data yet'
+                    }
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Busiest Service</span>
-                  <span className="font-semibold text-gray-900">New Connection</span>
+                  <span className="font-semibold text-gray-900">
+                    {dashboardData.serviceTypeBreakdown && dashboardData.serviceTypeBreakdown.length > 0
+                      ? dashboardData.serviceTypeBreakdown[0].type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+                      : 'No services yet'
+                    }
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Top Performer</span>
-                  <span className="font-semibold text-gray-900">Mike R. (26 customers)</span>
+                  <span className="font-semibold text-gray-900">
+                    {officerData && officerData.length > 0 
+                      ? `${officerData[0].name} (${officerData[0].customersServed} customers)`
+                      : 'No officers available'
+                    }
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Efficiency Rate</span>
-                  <span className="font-semibold text-green-600">91%</span>
+                  <span className="text-gray-600">Total Customers</span>
+                  <span className="font-semibold text-green-600">{dashboardData.totalCustomersToday || 0}</span>
                 </div>
               </div>
             </div>
