@@ -66,6 +66,16 @@ export const customerAPI = {
   getCustomerStatus: async (tokenId: string): Promise<ApiResponse<Customer>> => {
     return apiClient.get(`/customer/status/${tokenId}`);
   },
+
+  // Get all tokens for a customer by phone number
+  getCustomerTokens: async (phoneNumber: string): Promise<ApiResponse<Customer[]>> => {
+    return apiClient.get(`/customer/tokens/${phoneNumber}`);
+  },
+
+  // Get all tokens for a customer by customer ID
+  getCustomerTokensById: async (customerId: string): Promise<ApiResponse<Customer[]>> => {
+    return apiClient.get(`/customer/${customerId}/tokens`);
+  },
 };
 
 export const queueAPI = {

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Clock, Users, QrCode, CheckCircle } from 'lucide-react';
+import { Clock, Users, QrCode, CheckCircle, Plus, RefreshCw } from 'lucide-react';
 import type { Customer } from '../../types';
 import { useQueue } from '../../context/QueueContext';
+import { customerAPI } from '../../utils/api';
 
 interface TokenDisplayProps {
   customer: Customer;
@@ -13,24 +14,54 @@ interface TokenDisplayProps {
 export function TokenDisplay({ customer, onBack }: TokenDisplayProps) {
   const { queueStatus, startRealTimeUpdates, stopRealTimeUpdates } = useQueue();
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [allCustomerTokens, setAllCustomerTokens] = useState<Customer[]>([customer]);
+  const [isLoadingTokens, setIsLoadingTokens] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<Customer>(customer);
 
   useEffect(() => {
-    startRealTimeUpdates(customer.tokenNumber);
+    startRealTimeUpdates(selectedToken.tokenNumber);
     generateQRCode();
+    loadAllCustomerTokens();
 
     return () => {
       stopRealTimeUpdates();
     };
-  }, [customer.tokenNumber, startRealTimeUpdates, stopRealTimeUpdates]);
+  }, [selectedToken.tokenNumber, startRealTimeUpdates, stopRealTimeUpdates]);
+
+  const loadAllCustomerTokens = async () => {
+    try {
+      setIsLoadingTokens(true);
+      const response = await customerAPI.getCustomerTokens(customer.phoneNumber);
+      
+      if (response.success && response.data) {
+        // Filter out tokens that are older than 24 hours and not completed
+        const recentTokens = response.data.filter((token: Customer) => {
+          const tokenDate = new Date(token.createdAt);
+          const hoursDiff = (Date.now() - tokenDate.getTime()) / (1000 * 60 * 60);
+          return hoursDiff < 24 || token.status !== 'completed';
+        });
+        
+        setAllCustomerTokens(recentTokens.length > 0 ? recentTokens : [customer]);
+      } else {
+        // Fallback to just the current customer if API fails
+        setAllCustomerTokens([customer]);
+      }
+    } catch (error) {
+      console.log('Could not load all customer tokens, using current token only:', error);
+      setAllCustomerTokens([customer]);
+    } finally {
+      setIsLoadingTokens(false);
+    }
+  };
 
   const generateQRCode = async () => {
     try {
-      // Create QR code data
+      // Create QR code data for the selected token
       const qrData = JSON.stringify({
-        tokenNumber: customer.tokenNumber,
-        name: customer.name,
-        serviceType: customer.serviceType,
-        timestamp: customer.createdAt,
+        tokenNumber: selectedToken.tokenNumber,
+        name: selectedToken.name,
+        serviceType: selectedToken.serviceType,
+        timestamp: selectedToken.createdAt,
       });
 
       // For demonstration, create a simple QR code URL using qr-server.com
@@ -41,8 +72,8 @@ export function TokenDisplay({ customer, onBack }: TokenDisplayProps) {
     }
   };
 
-  const currentPosition = queueStatus?.position || customer.queuePosition;
-  const estimatedWaitTime = queueStatus?.estimatedWaitTime || customer.estimatedWaitTime;
+  const currentPosition = queueStatus?.position || selectedToken.queuePosition;
+  const estimatedWaitTime = queueStatus?.estimatedWaitTime || selectedToken.estimatedWaitTime;
   const progressPercentage = Math.max(0, 100 - (currentPosition * 10));
 
   const formatWaitTime = (minutes: number) => {
@@ -59,21 +90,85 @@ export function TokenDisplay({ customer, onBack }: TokenDisplayProps) {
       {/* Token Number Card */}
       <Card padding="lg" className="text-center">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">Your Token Number</h2>
-          <div className="text-6xl font-bold text-blue-600 mb-2">
-            {customer.tokenNumber}
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-gray-700">Your Token Number</h2>
+            {allCustomerTokens.length > 1 && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={loadAllCustomerTokens}
+                disabled={isLoadingTokens}
+                className="text-xs"
+              >
+                <RefreshCw className={`w-3 h-3 mr-1 ${isLoadingTokens ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            )}
           </div>
-          <p className="text-gray-600">{customer.name}</p>
-          <p className="text-sm text-gray-500">{customer.serviceType}</p>
+          <div className="text-6xl font-bold text-blue-600 mb-2">
+            {selectedToken.tokenNumber}
+          </div>
+          <p className="text-gray-600">{selectedToken.name}</p>
+          <p className="text-sm text-gray-500">{selectedToken.serviceType}</p>
         </div>
 
-        {customer.status === 'serving' && (
+        {selectedToken.status === 'being_served' && (
           <div className="flex items-center justify-center space-x-2 text-green-600 mb-4">
             <CheckCircle className="w-5 h-5" />
             <span className="font-semibold">You're being served!</span>
           </div>
         )}
       </Card>
+
+      {/* Multiple Tokens Card - Show if customer has additional service tokens */}
+      {allCustomerTokens.length > 1 && (
+        <Card padding="md">
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">All Your Service Tokens</h3>
+            <p className="text-xs text-gray-500">
+              You have {allCustomerTokens.length} service requests. Tap a token to view its status.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {allCustomerTokens.map((token) => (
+              <button
+                key={token.tokenNumber}
+                onClick={() => setSelectedToken(token)}
+                className={`p-3 rounded-lg border-2 text-left transition-all ${
+                  selectedToken.tokenNumber === token.tokenNumber
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-sm text-blue-600">
+                    {token.tokenNumber}
+                  </span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    token.status === 'waiting' ? 'bg-yellow-100 text-yellow-800' :
+                    token.status === 'being_served' ? 'bg-green-100 text-green-800' :
+                    token.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {token.status === 'waiting' ? 'Waiting' :
+                     token.status === 'being_served' ? 'Serving' :
+                     token.status === 'completed' ? 'Done' : 'Cancelled'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 truncate">
+                  {token.serviceType}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {new Date(token.createdAt).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </p>
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Queue Status Card */}
       <Card padding="md">
