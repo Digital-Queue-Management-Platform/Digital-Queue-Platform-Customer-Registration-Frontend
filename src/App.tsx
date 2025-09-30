@@ -4,7 +4,12 @@ import { QueueProvider } from './context/QueueContext';
 import { RegistrationPage } from './pages/RegistrationPage';
 import { QueueStatusBoardPage } from './pages/QueueStatusBoard';
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
+import { OfficerLogin } from './pages/OfficerLogin';
+import { OfficerDashboard } from './pages/OfficerDashboard';
+import { OfficerQueueManagement } from './pages/OfficerQueueManagement';
+import { OfficerSettings } from './pages/OfficerSettings';
 import { Layout } from './components/layout/Layout';
+import { OfficerProtectedRoute } from './components/officer/OfficerProtectedRoute';
 
 // Component to handle page info based on current route
 function AppContent() {
@@ -22,6 +27,16 @@ function AppContent() {
           title: 'Analytics Dashboard',
           subtitle: 'Performance metrics and insights'
         };
+      case '/officer-login':
+        return {
+          title: 'Officer Login',
+          subtitle: 'Service officer authentication'
+        };
+      case '/officer-dashboard':
+        return {
+          title: 'Officer Dashboard',
+          subtitle: 'Queue management and customer service'
+        };
       default:
         return {
           title: 'Customer Registration',
@@ -31,6 +46,30 @@ function AppContent() {
   };
 
   const pageInfo = getPageInfo();
+
+  // Officer pages don't need the main customer layout
+  if (location.pathname.startsWith('/officer')) {
+    return (
+      <Routes>
+        <Route path="/officer-login" element={<OfficerLogin />} />
+        <Route path="/officer-dashboard" element={
+          <OfficerProtectedRoute>
+            <OfficerDashboard />
+          </OfficerProtectedRoute>
+        } />
+        <Route path="/officer/queue-management" element={
+          <OfficerProtectedRoute>
+            <OfficerQueueManagement />
+          </OfficerProtectedRoute>
+        } />
+        <Route path="/officer/settings" element={
+          <OfficerProtectedRoute>
+            <OfficerSettings />
+          </OfficerProtectedRoute>
+        } />
+      </Routes>
+    );
+  }
 
   return (
     <Layout 
