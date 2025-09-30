@@ -4,10 +4,12 @@ import { QueueProvider } from './context/QueueContext';
 import { RegistrationPage } from './pages/RegistrationPage';
 import { QueueStatusBoardPage } from './pages/QueueStatusBoard';
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
-import { OfficerLogin } from './pages/OfficerLogin';
-import { OfficerDashboard } from './pages/OfficerDashboard';
-import { OfficerQueueManagement } from './pages/OfficerQueueManagement';
-import { OfficerSettings } from './pages/OfficerSettings';
+import { OfficerLogin } from './pages/officer/OfficerLogin';
+import { OfficerDashboard } from './pages/officer/OfficerDashboard';
+import { OfficerQueueManagement } from './pages/officer/OfficerQueueManagement';
+import { OfficerServicePage } from './pages/officer/OfficerServicePage';
+import { OfficerDailySummary } from './pages/officer/OfficerDailySummary';
+import { OfficerSettings } from './pages/officer/OfficerSettings';
 import { Layout } from './components/layout/Layout';
 import { OfficerProtectedRoute } from './components/officer/OfficerProtectedRoute';
 
@@ -60,6 +62,16 @@ function AppContent() {
         <Route path="/officer/queue-management" element={
           <OfficerProtectedRoute>
             <OfficerQueueManagement />
+          </OfficerProtectedRoute>
+        } />
+        <Route path="/officer/service" element={
+          <OfficerProtectedRoute>
+            <OfficerServicePage />
+          </OfficerProtectedRoute>
+        } />
+        <Route path="/officer/daily-summary" element={
+          <OfficerProtectedRoute>
+            <OfficerDailySummary />
           </OfficerProtectedRoute>
         } />
         <Route path="/officer/settings" element={

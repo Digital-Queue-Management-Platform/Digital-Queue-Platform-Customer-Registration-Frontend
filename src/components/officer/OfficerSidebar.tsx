@@ -2,9 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
-  UserCheck, 
   BarChart3, 
-  Bell, 
   Settings,
   Menu,
   X
@@ -32,22 +30,10 @@ export function OfficerSidebar({ isOpen, onToggle }: OfficerSidebarProps) {
       isActive: location.pathname === '/officer/queue-management'
     },
     {
-      path: '/officer/customer-service',
-      name: 'Customer Service',
-      icon: UserCheck,
-      isActive: location.pathname === '/officer/customer-service'
-    },
-    {
       path: '/officer/daily-summary',
       name: 'Daily Summary',
       icon: BarChart3,
       isActive: location.pathname === '/officer/daily-summary'
-    },
-    {
-      path: '/officer/notifications',
-      name: 'Notifications',
-      icon: Bell,
-      isActive: location.pathname === '/officer/notifications'
     },
     {
       path: '/officer/settings',

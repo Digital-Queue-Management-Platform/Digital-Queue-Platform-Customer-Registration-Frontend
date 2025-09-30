@@ -25,7 +25,7 @@ export interface QueueStatus {
 export interface OutletQueue {
   outletId: string;
   currentlyServing: string;
-  nextTokens: string[];
+  nextTokens: Customer[] | string[]; // Support both formats
   totalWaiting: number;
   averageWaitTime: number;
 }
