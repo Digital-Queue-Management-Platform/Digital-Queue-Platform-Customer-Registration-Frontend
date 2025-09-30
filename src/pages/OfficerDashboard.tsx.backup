@@ -1,0 +1,267 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { OfficerLayout } from '../components/officer/OfficerLayout';
+import { Card } from '../components/ui/Card';
+import { 
+  Users, 
+  Clock, 
+  CheckCircle, 
+  Phone,
+  CreditCard,
+  Settings as SettingsIcon,
+  Shield,
+  Smartphone,
+  Star,
+  FileText
+} from 'lucide-react';
+
+export function OfficerDashboard() {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Check if officer is authenticated
+    const token = localStorage.getItem('officer_token');
+    if (!token) {
+      navigate('/officer-login');
+      return;
+    }
+  }, [navigate]);
+
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true);
+      // TODO: Replace with actual API calls
+      
+      // Mock current customer data
+      setCurrentCustomer({
+        tokenNumber: 'A045',
+        name: 'Kumara Jayawardena',
+        phoneNumber: '071-555-7890',
+        serviceType: 'Technical Support',
+        waitingTime: 18,
+        notes: 'Router configuration issue'
+      });
+
+      // Mock queue data
+      setQueueData([
+        { token: 'A046', customer: 'Priyantha Silva', serviceType: 'Bill Payments', waitTime: 15 },
+        { token: 'A047', customer: 'Malini Fernando', serviceType: 'Account Services', waitTime: 12 },
+        { token: 'P012', customer: 'Asanka Perera', serviceType: 'New Connections', waitTime: 10, priority: true },
+        { token: 'A048', customer: 'Lakshmi Gunawardena', serviceType: 'Device/SIM Issues', waitTime: 8 },
+        { token: 'A049', customer: 'Thilak Rathnayake', serviceType: 'Technical Support', waitTime: 5 },
+      ]);
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('officer_token');
+    localStorage.removeItem('officer_data');
+    navigate('/');
+  };
+
+  const handleCallNext = () => {
+    // TODO: Implement call next customer logic
+    console.log('Calling next customer...');
+  };
+
+  const handleCustomerArrived = () => {
+    // TODO: Implement customer arrived logic
+    console.log('Customer arrived...');
+  };
+
+  const handleSkipCustomer = () => {
+    // TODO: Implement skip customer logic
+    console.log('Skipping customer...');
+  };
+
+  const handleStartService = () => {
+    // TODO: Implement start service logic
+    console.log('Starting service...');
+  };
+
+  const handleTransferCustomer = () => {
+    // TODO: Implement transfer logic
+    console.log('Transferring customer...');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <img src="/Logo.jpg" alt="Logo" className="w-8 h-8 object-contain" />
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">SLTMobitel Queue Management</h1>
+              <p className="text-sm text-gray-600">Service Officer Dashboard</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-900">{officerData?.name}</p>
+              <p className="text-xs text-gray-500">{officerData?.id} • Counter 3</p>
+            </div>
+            <Button variant="outline" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Dashboard Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card padding="md">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-800">Total Customers Waiting</h3>
+                <p className="text-3xl font-bold text-blue-600 mt-2">14</p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-800">Average Wait Time</h3>
+                <p className="text-3xl font-bold text-green-600 mt-2">12 min</p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-800">Customers Served Today</h3>
+                <p className="text-3xl font-bold text-green-600 mt-2">27</p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-800">Service Efficiency</h3>
+                <p className="text-3xl font-bold text-blue-600 mt-2">94%</p>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            {/* Current Customer */}
+            <Card padding="lg">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Current Customer</h2>
+              {currentCustomer ? (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-blue-600 mb-2">
+                      {currentCustomer.tokenNumber}
+                    </div>
+                    <p className="text-lg font-semibold text-gray-800">{currentCustomer.name}</p>
+                    <p className="text-gray-600">{currentCustomer.phoneNumber}</p>
+                    <p className="text-blue-600 font-medium">{currentCustomer.serviceType}</p>
+                    <p className="text-sm text-gray-500">Waiting for: {currentCustomer.waitingTime} min</p>
+                  </div>
+
+                  {currentCustomer.notes && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-sm font-medium text-yellow-800">Notes:</p>
+                      <p className="text-sm text-yellow-700">{currentCustomer.notes}</p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button variant="primary" onClick={handleCustomerArrived}>
+                      Customer Arrived
+                    </Button>
+                    <Button variant="secondary" onClick={handleStartService}>
+                      Start Service
+                    </Button>
+                    <Button variant="outline" onClick={handleSkipCustomer}>
+                      Skip Customer
+                    </Button>
+                    <Button variant="outline" onClick={handleTransferCustomer}>
+                      Transfer to Another Counter
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">No customer currently being served</p>
+                  <Button variant="primary" onClick={handleCallNext}>
+                    Call Next Customer
+                  </Button>
+                </div>
+              )}
+            </Card>
+
+            {/* Queue List */}
+            <Card padding="lg">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Next in Queue</h2>
+                <Button variant="primary" onClick={handleCallNext}>
+                  Call Next Customer
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                {queueData.map((customer, index) => (
+                  <div
+                    key={customer.token}
+                    className={`p-4 rounded-lg border-2 ${
+                      customer.priority
+                        ? 'border-red-200 bg-red-50'
+                        : index === 0
+                        ? 'border-blue-200 bg-blue-50'
+                        : 'border-gray-200 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg font-bold text-gray-900">
+                            {customer.token}
+                          </span>
+                          {customer.priority && (
+                            <span className="px-2 py-1 text-xs font-semibold text-red-600 bg-red-100 rounded-full">
+                              Priority
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-medium text-gray-800">{customer.customer}</p>
+                        <p className="text-sm text-gray-600">{customer.serviceType}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500">{customer.waitTime} min</p>
+                        <div className="flex space-x-1 mt-2">
+                          <button className="p-1 text-blue-600 hover:bg-blue-100 rounded">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 12l-4-4 1.41-1.41L10 9.17l2.59-2.58L14 8l-4 4z"/>
+                            </svg>
+                          </button>
+                          <button className="p-1 text-green-600 hover:bg-green-100 rounded">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                          <button className="p-1 text-yellow-600 hover:bg-yellow-100 rounded">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

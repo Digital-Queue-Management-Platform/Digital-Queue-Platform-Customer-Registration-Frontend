@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface TopHeaderProps {
   title: string;
@@ -8,6 +9,7 @@ interface TopHeaderProps {
 export const TopHeader = ({ title, subtitle }: TopHeaderProps) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -30,6 +32,28 @@ export const TopHeader = ({ title, subtitle }: TopHeaderProps) => {
 
         {/* Header Actions */}
         <div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0">
+          {/* Staff Login Button */}
+          <button
+            onClick={() => navigate('/officer-login')}
+            className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Staff Login</span>
+          </button>
+          
+          {/* Mobile Staff Login Button */}
+          <button
+            onClick={() => navigate('/officer-login')}
+            className="sm:hidden p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center"
+            aria-label="Staff Login"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+
           {/* Current Time */}
           <div className="hidden lg:flex flex-col items-end text-sm text-gray-600 min-w-0">
             <div className="font-medium text-xs leading-tight">
